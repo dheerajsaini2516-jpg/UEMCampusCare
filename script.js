@@ -1,0 +1,38 @@
+const defaultOpen = [
+  {id:'i1', icon:'💧', title:'Water cooler is leaking', category:'Maintenance', location:'Science Block · Floor 2', details:'Water is leaking near the dispenser.', time:'12 min ago', color:'#edf3eb'},
+  {id:'i2', icon:'⌁', title:'Wi-Fi not working in library', category:'Technology', location:'Central Library · Ground floor', details:'Students cannot connect to campus Wi-Fi.', time:'28 min ago', color:'#eeeaff'},
+  {id:'i3', icon:'⚡', title:'Exposed wire near staircase', category:'Safety', location:'Engineering Block · Floor 3', details:'Wire needs immediate inspection.', time:'1 hr ago', color:'#ffe8e3'}
+];
+const defaultResolved = [{id:'r1', title:'Projector in Room 204', category:'Technology', location:'Academic Block · Room 204', note:'The HDMI cable was replaced and the projector is working properly.', resolvedAt:'Resolved today'}];
+let openIssues = JSON.parse(localStorage.getItem('cc-open-issues') || 'null') || defaultOpen;
+let resolvedIssues = JSON.parse(localStorage.getItem('cc-resolved-issues') || 'null') || defaultResolved;
+let activeFilter = 'All'; let searchText = '';
+let currentUser = null;
+const STUDENT_PASSWORD = 'uemcampus';
+const ADMIN_PASSWORD = 'uemcampusadmin';
+
+const icons = {Maintenance:'🔧', Cleanliness:'✦', Technology:'⌁', Safety:'⚡'};
+const colors = {Maintenance:'#edf3eb', Cleanliness:'#fff1e1', Technology:'#eeeaff', Safety:'#ffe8e3'};
+const $ = selector => document.querySelector(selector);
+const escapeHTML = value => String(value).replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+
+function saveData(){localStorage.setItem('cc-open-issues', JSON.stringify(openIssues));localStorage.setItem('cc-resolved-issues', JSON.stringify(resolvedIssues));}
+function toast(message){const box=$('#toast');box.textContent=message;box.classList.add('show');setTimeout(()=>box.classList.remove('show'),3200)}
+function showApp(view){$('#loginScreen').classList.add('hidden');$('#appScreen').classList.remove('hidden');document.querySelector('[data-admin-only]').classList.toggle('hidden',currentUser?.role!=='admin');switchView(view)}
+function switchView(view){if(view==='admin'&&currentUser?.role!=='admin'){toast('Administrator password is required for the admin dashboard.');return}$('.nav-link.active')?.classList.remove('active');document.querySelector(`[data-view="${view}"]`).classList.add('active');$('#studentView').classList.toggle('hidden',view!=='student');$('#adminView').classList.toggle('hidden',view!=='admin');renderAll()}
+
+function getFiltered(){return openIssues.filter(issue=>(activeFilter==='All'||issue.category===activeFilter)&&`${issue.title} ${issue.location} ${issue.category}`.toLowerCase().includes(searchText))}
+function renderStudent(){const data=getFiltered();$('#activeLabel').textContent=`${openIssues.length} active report${openIssues.length===1?'':'s'} submitted by students`;$('#studentIssues').innerHTML=data.length?data.map(issue=>`<article class="issue-card"><div class="issue-top"><span class="issue-icon">${issue.icon}</span><span class="tag" style="background:${issue.color}">${escapeHTML(issue.category)}</span></div><h4>${escapeHTML(issue.title)}</h4><p>⌖ ${escapeHTML(issue.location)}</p><footer><span>${escapeHTML(issue.time)}</span><span class="status-open">● Open</span></footer></article>`).join(''):'<div class="empty">No active issues found.</div>';$('#resolvedPreview').innerHTML=resolvedIssues.slice(0,3).map(issue=>`<article class="resolved-card"><strong>✓ ${escapeHTML(issue.title)}</strong><p>${escapeHTML(issue.note)}</p><small>${escapeHTML(issue.resolvedAt)}</small></article>`).join('')||'<div class="empty">No resolved reports yet.</div>'}
+function renderAdmin(){ $('#openCount').textContent=openIssues.length;$('#resolvedCount').textContent=resolvedIssues.length;$('#adminIssues').innerHTML=openIssues.length?openIssues.map(issue=>`<article class="admin-item"><div><h4>${issue.icon} ${escapeHTML(issue.title)}</h4><p>${escapeHTML(issue.details||'No additional detail provided.')}</p><p class="admin-meta">${escapeHTML(issue.category)} · ${escapeHTML(issue.location)} · ${escapeHTML(issue.time)}</p></div><div class="resolution-box"><label>Resolution note<textarea id="note-${issue.id}" placeholder="Example: Technician repaired the fan and tested it."></textarea></label><button class="resolve-btn" data-resolve="${issue.id}">✓ Mark problem solved</button></div></article>`).join(''):'<div class="empty">All current reports are resolved.</div>';$('#adminResolved').innerHTML=resolvedIssues.length?resolvedIssues.map(issue=>`<article class="admin-item admin-resolved"><div><h4>✓ ${escapeHTML(issue.title)}</h4><p class="resolved-note"><strong>Admin note:</strong> ${escapeHTML(issue.note)}</p><p class="admin-meta">${escapeHTML(issue.category)} · ${escapeHTML(issue.location)} · ${escapeHTML(issue.resolvedAt)}</p></div></article>`).join(''):'<div class="empty">No resolved issue history.</div>'}
+function renderAll(){renderStudent();renderAdmin()}
+
+$('#loginForm').onsubmit=event=>{event.preventDefault();const name=$('#loginName').value.trim();const email=$('#loginEmail').value.trim();const role=$('#loginRole').value;const password=$('#loginPassword').value;const correctPassword=role==='admin'?ADMIN_PASSWORD:STUDENT_PASSWORD;if(password!==correctPassword){toast(role==='admin'?'Incorrect administrator password.':'Incorrect student password.');return}currentUser={name,email,role};event.target.reset();showApp(role==='admin'?'admin':'student');toast(`Welcome, ${name}!`)};
+$('#backHome').onclick=()=>{currentUser=null;$('#appScreen').classList.add('hidden');$('#loginScreen').classList.remove('hidden');$('#loginPassword').focus();toast('You have been logged out.')};
+document.querySelectorAll('.nav-link').forEach(button=>button.onclick=()=>switchView(button.dataset.view));
+$('#showReportForm').onclick=()=>$('#reportFormBox').classList.remove('hidden');$('#closeReportForm').onclick=()=>$('#reportFormBox').classList.add('hidden');
+$('#reportForm').onsubmit=event=>{event.preventDefault();const category=$('#issueCategory').value;openIssues.unshift({id:`issue-${Date.now()}`,icon:icons[category],title:$('#issueTitle').value.trim(),category,location:$('#issueLocation').value.trim(),details:$('#issueDetails').value.trim(),time:'Just now',color:colors[category]});saveData();event.target.reset();$('#reportFormBox').classList.add('hidden');renderAll();toast('✓ Your issue report has been submitted.')};
+$('#searchInput').oninput=event=>{searchText=event.target.value.toLowerCase().trim();renderStudent()};
+document.querySelectorAll('#studentFilters .chip').forEach(button=>button.onclick=()=>{document.querySelector('#studentFilters .chip.active').classList.remove('active');button.classList.add('active');activeFilter=button.dataset.filter;renderStudent()});
+$('#adminIssues').onclick=event=>{const button=event.target.closest('[data-resolve]');if(!button)return;const id=button.dataset.resolve;const note=$(`#note-${id}`).value.trim();if(!note){toast('Please write a resolution note first.');return}const issue=openIssues.find(item=>item.id===id);openIssues=openIssues.filter(item=>item.id!==id);resolvedIssues.unshift({...issue,note,resolvedAt:'Resolved just now'});saveData();renderAll();toast('✓ Problem marked as solved. Students can now see the update.')};
+$('#resetDemo').onclick=()=>{if(!confirm('Reset all demo reports?'))return;localStorage.removeItem('cc-open-issues');localStorage.removeItem('cc-resolved-issues');openIssues=[...defaultOpen];resolvedIssues=[...defaultResolved];renderAll();toast('Demo data reset successfully.')};
+renderAll();
