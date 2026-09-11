@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampusCare | Campus Issue Tracker</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <!-- Login Screen -->
+  <section id="loginScreen" class="login-screen">
+    <nav class="welcome-nav">
+      <a class="brand" href="#">
+        <span>U</span> UEM CampusCare
+      </a>
+
+      <p>Campus issue tracker</p>
+    </nav>
+
+    <div class="login-layout">
+      <div class="login-copy">
+        <p class="eyebrow">UEM CAMPUS ISSUE MANAGEMENT</p>
+
+        <h1>
+          Report issues.<br>
+          <em>Improve campus.</em>
+        </h1>
+
+        <p>
+          Students can report campus problems, while authorized administrators
+          can review and resolve them.
+        </p>
+      </div>
+
+      <section class="login-card" aria-labelledby="loginTitle">
+        <div class="uem-logo" aria-hidden="true">UEM</div>
+
+        <p class="eyebrow">SECURE ACCESS</p>
+        <h2 id="loginTitle">Log in to CampusCare</h2>
+
+        <p class="login-help">
+          Enter your details and select your account type.
+        </p>
+
+        <form id="loginForm">
+          <label>
+            Full name
+            <input
+              id="loginName"
+              required
+              maxlength="50"
+              placeholder="Enter your full name"
+            >
+          </label>
+
+          <label>
+            Gmail address
+            <input
+              id="loginEmail"
+              required
+              type="email"
+              placeholder="name@gmail.com"
+            >
+          </label>
+
+          <label>
+            Login as
+            <select id="loginRole">
+              <option value="student">Student</option>
+              <option value="admin">Administrator</option>
+            </select>
+          </label>
+
+          <label>
+            Password
+            <input
+              id="loginPassword"
+              required
+              type="password"
+              placeholder="Enter password"
+            >
+          </label>
+
+          <button class="primary login-button" type="submit">
+            Log in <b>→</b>
+          </button>
+        </form>
+
+        <p class="login-note">
+          Student and administrator accounts have separate access.
+        </p>
+      </section>
+    </div>
+  </section>
+
+  <!-- Main Website -->
+  <main id="appScreen" class="app-screen hidden">
+    <header class="app-header">
+      <a class="brand" href="#">
+        <span>U</span> UEM CampusCare
+      </a>
+
+      <nav>
+        <button class="nav-link active" data-view="student">
+          Student view
+        </button>
+
+        <button class="nav-link" data-view="admin" data-admin-only>
+          Admin view
+        </button>
+      </nav>
+
+      <button class="logout" id="backHome">← Log out</button>
+    </header>
+
+    <!-- Student View -->
+    <section id="studentView" class="view">
+      <div class="page-intro">
+        <div>
+          <p class="eyebrow">STUDENT PORTAL</p>
+          <h2>Report an issue</h2>
+
+          <p>
+            Share the problem with the correct campus team. Your report stays
+            visible until it is resolved.
+          </p>
+        </div>
+
+        <button class="primary" id="showReportForm">
+          + Report new issue
+        </button>
+      </div>
+
+      <!-- Report Form -->
+      <div class="report-form hidden" id="reportFormBox">
+        <div class="form-heading">
+          <div>
+            <h3>New issue report</h3>
+            <p>Give details so the team can act quickly.</p>
+          </div>
+
+          <button class="icon-close" id="closeReportForm">×</button>
+        </div>
+
+        <form id="reportForm">
+          <label>
+            Issue title
+            <input
+              id="issueTitle"
+              required
+              maxlength="70"
+              placeholder="Example: Fan is not working"
+            >
+          </label>
+
+          <div class="form-row">
+            <label>
+              Category
+              <select id="issueCategory">
+                <option>Maintenance</option>
+                <option>Cleanliness</option>
+                <option>Technology</option>
+                <option>Safety</option>
+              </select>
+            </label>
+
+            <label>
+              Location
+              <input
+                id="issueLocation"
+                required
+                placeholder="Example: Block A, Room 101"
+              >
+            </label>
+          </div>
+
+          <label>
+            Details
+            <textarea
+              id="issueDetails"
+              placeholder="Describe the problem briefly"
+            ></textarea>
+          </label>
+
+          <button class="primary submit" type="submit">
+            Submit report <b>→</b>
+          </button>
+        </form>
+      </div>
+
+      <!-- Active Issues -->
+      <section class="board">
+        <div class="board-head">
+          <div>
+            <h3>Active campus issues</h3>
+            <p id="activeLabel">Open reports submitted by students</p>
+          </div>
+
+          <label class="search">
+            <span>⌕</span>
+            <input id="searchInput" placeholder="Search issues">
+          </label>
+        </div>
+
+        <div class="filters" id="studentFilters">
+          <button class="chip active" data-filter="All">All</button>
+          <button class="chip" data-filter="Maintenance">Maintenance</button>
+          <button class="chip" data-filter="Technology">Technology</button>
+          <button class="chip" data-filter="Cleanliness">Cleanliness</button>
+          <button class="chip" data-filter="Safety">Safety</button>
+        </div>
+
+        <div class="issue-grid" id="studentIssues"></div>
+      </section>
+
+      <!-- Resolved Issues -->
+      <section class="resolved-section">
+        <div>
+          <p class="eyebrow">COMPLETED WORK</p>
+          <h3>Recently resolved</h3>
+        </div>
+
+        <div id="resolvedPreview" class="resolved-preview"></div>
+      </section>
+    </section>
+
+    <!-- Admin View -->
+    <section id="adminView" class="view hidden">
+      <div class="page-intro">
+        <div>
+          <p class="eyebrow">ADMIN PORTAL</p>
+          <h2>Manage campus issues</h2>
+
+          <p>
+            Review pending reports, add a resolution note, and mark a problem
+            as solved.
+          </p>
+        </div>
+
+        <div class="admin-stats">
+          <div>
+            <strong id="openCount">0</strong>
+            <span>Open</span>
+          </div>
+
+          <div>
+            <strong id="resolvedCount">0</strong>
+            <span>Resolved</span>
+          </div>
+        </div>
+      </div>
+
+      <section class="admin-board">
+        <div class="board-head">
+          <div>
+            <h3>Reports waiting for action</h3>
+
+            <p>
+              Marking an issue resolved removes it from the student active
+              list.
+            </p>
+          </div>
+        </div>
+
+        <div id="adminIssues" class="admin-list"></div>
+      </section>
+
+      <section class="admin-board resolved-admin">
+        <div class="board-head">
+          <div>
+            <h3>Resolved issue history</h3>
+            <p>Students can see the resolution note from this list.</p>
+          </div>
+
+          <button class="small-button" id="resetDemo">
+            Reset demo data
+          </button>
+        </div>
+
+        <div id="adminResolved" class="admin-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <!-- Notification -->
+  <div id="toast" class="toast">✓ Done</div>
+
+  <script src="script.js"></script>
+</body>
+</html>
